@@ -2,17 +2,14 @@ import express from "express";
 import path from "path";
 import fs from "fs";
 
-// Initialize the app
 const app = express();
 
 // Set blog directory and port
-const blogsDir = path.join(__dirname, "blogs");
+const blogsDir = path.resolve("blogs");
 const PORT = 3000;
 
-// Middleware to parse JSON requests
 app.use(express.json());
 
-// Ensure the blogs directory exists
 if (!fs.existsSync(blogsDir)) {
   fs.mkdirSync(blogsDir, { recursive: true });
   console.log("Blogs directory created!");
