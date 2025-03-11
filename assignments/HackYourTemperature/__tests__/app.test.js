@@ -17,7 +17,7 @@ describe("POST /weather", () => {
   });
 
   it("should return a valid weather response for a real city", async () => {
-    const response = await request
+    const response = await request(app)
       .post("/weather")
       .send({ cityName: "Amsterdam" });
     expect(response.status).toBe(200);

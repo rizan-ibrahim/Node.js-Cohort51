@@ -17,6 +17,9 @@ app.post("/weather", async (req, res) => {
     return res.status(400).json({ message: "City name is required." });
   }
   const API_KEY = keys.API_KEY;
+  if (!API_KEY) {
+    return res.status(500).json({ message: "API key is missing." });
+  }
   const url = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${API_KEY}&units=metric`;
 
   try {
