@@ -1,18 +1,53 @@
 const http = require('http');
+const fs = require('fs');
 
-// Create a server
 let server = http.createServer((req, res) => {
-  // Set the response HTTP header
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  if (req.url === '/') {
+    fs.readFile('index.html','utf-8', function (err, htmlContent) {
+      if (err) {
+        res.statusCode = 500; 
+        res.end('Error reading index.html');
+        return;
+      }
+        res.setHeader('Content-Type', 'text/html'); 
+        res.write(htmlContent); 
+        res.end(); 
+    });
+  }else if(req.url === '/index.js'){
 
-  // Send a response back to the client
-  res.write('Hello World!');
+     fs.readFile('index.js', 'utf-8', function (err, jsContent) {
+      if (err) {
+        res.statusCode = 500; 
+        res.end('Error reading index.js');
+        return;
+      }
+      res.setHeader('Content-Type', 'application/javascript'); 
+      res.write(jsContent); 
+      res.end();
+    });
 
-  // End the response
-  res.end();
+    
+  }else if (req.url === '/style.css') {
+    // Serve the CSS file
+    fs.readFile('style.css', 'utf-8', function (err, cssContent) {
+      if (err) {
+        res.statusCode = 500; // Internal server error
+        res.end('Error reading style.css');
+        return;
+      }
+      res.setHeader('Content-Type', 'text/css');
+      res.write(cssContent); 
+      res.end(); 
+    });
+
+    
+  }else{
+  
+  res.statusCode = 404;
+  res.end('Page not found');
+  }
 });
 
-// The server starts to listen on port 3000
 server.listen(3000, () => {
   console.log('Server is running on http://localhost:3000');
 });
