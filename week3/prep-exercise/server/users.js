@@ -18,18 +18,23 @@ export const register = async (req, res) => {
       .status(404)
       .json({ error: "username and password are required" });
   }
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   // we check if user exist
-  const userExist = database.getById(username);
-  if (userExist) {
-    return res.status(400).json({ error: "User already exists" });
-  }
+  // const userExist = database.getByUsername(username);
+  // if (userExist) {
+  //   return res.status(400).json({ error: "User already exists" });
+  // }
 
   // create  new user
-  const newUser = database.create({ id: uuid(), username, password });
+  const newUser = {username,password:hashedpassword};
+  const storedUser =database.create(newUser);
+  
   res
-    .status(201)
-    .json({ message: "User registered successfully", user: newUser });
+    .status(200)
+    .json({ id:storedUser.id,
+          username:storedUser.username
+          });
 };
 
 // Middleware for user login
@@ -41,23 +46,43 @@ export const login = async (req, res) => {
       .json({ error: "Username and password are required" });
   }
 
-  const user = database.getById(username);
+  const user = database.getByUsername(username);
   if (!user || user.password !== password) {
     return res.status(401).json({ error: "invaild username or password" });
-  }
+  };
 
-  res.status(200).json({ message: "Login successful", user });
+  const validPassword = await bcrypt.compare(password, user.password);
+  if (!validPassword) {
+    res.status(401).json({ message: " invalid credential" });
+    // console.log("the hashed password doesn't match the new one ");
+  }
+  //////////////////////////// Payload///////secretOrPrivateKey///options
+  const JwtToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+    expiresIn: "5h",
+  });
+  return res.status(200).json({ JwtToken });
+  
 };
 
 // Middleware to get user profile
 export const getProfile = async (req, res) => {
-  const { userId } = req.params;
-  const user = database.getById(userId);
-  if (!user) {
-    return res.status(404).json({ error: "User not found" });
+
+   const JwtToken = req.headers.authorization?.split(" ")[1];
+  if (!JwtToken) {
+    return res.status(400).json({ message: "no tiken provided" });
   }
-  res.status(200).json({ user });
-};
+  jwt.verify(JwtToken, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      res.status(400).json({ message: "invalid or expired token" });
+    }
+    const user = database.getById(decoded.id);
+    if (!user) {
+      res.status(400).json({ message: "user not found" });
+    }
+    res.status(200).json({ username: user.username });
+  });
+}
+ 
 
 // Middleware  logout
 export const logout = async (req, res) => {
