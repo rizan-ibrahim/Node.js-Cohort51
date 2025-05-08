@@ -1,6 +1,6 @@
 import express from "express";
-
-const PORT = 3000;
+import dotenv from "dotenv";
+dotenv.config();
 
 import { register, login, getProfile, logout } from "./users.js";
 
@@ -16,6 +16,6 @@ app.post("/logout", logout);
 // Serve the front-end application from the `client` folder
 app.use(express.static("client"));
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(3000, () => {
+  console.log(`Server is running on http://localhost:3000`);
 });

@@ -1,5 +1,6 @@
 import newDatabase from "./database.js";
 import { v4 as uuid } from "uuid";
+import bcrypt from "bcrypt";
 
 // Change this boolean to true if you wish to keep your
 // users between restart of your application
@@ -27,14 +28,10 @@ export const register = async (req, res) => {
   // }
 
   // create  new user
-  const newUser = {username,password:hashedpassword};
-  const storedUser =database.create(newUser);
-  
-  res
-    .status(200)
-    .json({ id:storedUser.id,
-          username:storedUser.username
-          });
+  const newUser = { username, password: hashedPassword };
+  const storedUser = database.create(newUser);
+
+  res.status(200).json({ id: storedUser.id, username: storedUser.username });
 };
 
 // Middleware for user login
@@ -49,7 +46,7 @@ export const login = async (req, res) => {
   const user = database.getByUsername(username);
   if (!user || user.password !== password) {
     return res.status(401).json({ error: "invaild username or password" });
-  };
+  }
 
   const validPassword = await bcrypt.compare(password, user.password);
   if (!validPassword) {
@@ -61,13 +58,11 @@ export const login = async (req, res) => {
     expiresIn: "5h",
   });
   return res.status(200).json({ JwtToken });
-  
 };
 
 // Middleware to get user profile
 export const getProfile = async (req, res) => {
-
-   const JwtToken = req.headers.authorization?.split(" ")[1];
+  const JwtToken = req.headers.authorization?.split(" ")[1];
   if (!JwtToken) {
     return res.status(400).json({ message: "no tiken provided" });
   }
@@ -81,8 +76,7 @@ export const getProfile = async (req, res) => {
     }
     res.status(200).json({ username: user.username });
   });
-}
- 
+};
 
 // Middleware  logout
 export const logout = async (req, res) => {
